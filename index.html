@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Scatback</title>
+    <link rel="icon" href="/img/fabrica/etiqueta.png" />
+    <link rel="stylesheet" href="css/index.css">
+    <!--Referencias propias-->
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/index.js"></script>
+</head>
+<body>
+    <div class="content-container">
+        <div class="login-container">
+            <div class="logo">
+                <img src="img/index/logo.jpg" alt="Logo de la Empresa">
+            </div>
+            <p class="description">Bienvenido a nuestra plataforma. Inicie sesión para continuar.</p>
+
+            <!-- Contenedor para mostrar errores -->
+            <div class="error-message" id="error-message"></div>
+
+            <form class="login-form">
+                <input type="text" placeholder="Usuario" required>
+                <input type="password" placeholder="Contraseña" required>
+                <button type="submit">Iniciar sesión</button>
+            </form>
+        </div>
+        <div class="info-section">
+            <h2>CONSTRUCCIÓN ARTESANAL</h2>
+            <p>
+                Utilizamos cuero curtido vegetal, totalmente natural y terminamos a mano todos nuestros productos. Estamos trabajando para convertirnos
+                 en 100% orgánicos en nuestro proceso.
+            </p>
+            <h2>EL MEJOR CUERO DEL MERCADO</h2>
+            <p>Nuestros zapatos y botas con ribete Goodyear prometen una comodidad sin igual y están diseñados para durar años de uso.</p>
+        </div>
+        <div class="image-section">
+            <img src="img/index/portada.jpg" alt="Imagen de la Empresa">
+        </div>  
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 DLC PROGRAMMING.</p>
+    </footer>
+</body>
+</html>

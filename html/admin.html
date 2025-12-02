@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatback</title>
+    <link rel="icon" href="/img/fabrica/etiqueta.png" />
+    <!--Estilos-->
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!--JS para acciones-->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase.js"></script>
+    <script src="../js/admin.js"></script>
+    <script src="../js/config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <img src="../img/index/logo.jpg" alt="Logo" class="header-logo">
+                <h1>SCATBACK - ADMIN</h1>
+            </div>
+            <div class="user-info">
+                <p>BIENVENIDO: <span id="user-name">Usuario</span></p>
+            </div>
+        </div>
+    </header>
+
+    <!--Contenedor para mostrar alertas-->
+    <div class="alert-message" id="alert_message"></div>
+
+    <section class="action-buttons">
+        <input type="number" id="txtScanSell" style="display: none" placeholder="Escaner el código del producto">
+        <button id="sell_product_btn" title="Vender">
+            <i class="fa fa-usd"></i>
+        </button>
+        <button id="send_product_btn" title="Enviar productos">
+            <i class="fa-solid fa-truck"></i>
+        </button>
+        <button id="btnReceiveProducts" title="Recibir productos">
+            <i class="fa fa-arrow-down"></i>
+        </button>
+        <button id="add_product_btn" title="Añadir nuevo producto">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button id="btnReportes" title="Ver reportes">
+            <i class="fa fa-file-text"></i>
+        </button>
+        <button id="home_btn" style="display: none" title="Regresar al inicio">
+            <i class="fa fa-home"></i>
+        </button>
+        <button id="btnClientes" title="Ver clientes">
+            <i class="fa fa-address-book"></i>
+        </button>
+        <button id="logout_btn" title="Cerrar sesión">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </section>
+
+    <!--VENTAS-->
+    <div id="ventas" style="display: none">
+        <div>
+            <img id="imgSell">
+            <table style="margin-bottom: 10px;">
+                <tbody id="tabStockDisponible"></tbody>
+            </table>
+        </div>
+        <div class="detallesVentas">
+            <p>
+                <b>Nombre:</b> <span id="txtNameSell"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <b>Talla:</b> <span id="txtSizeSell"></span>
+            </p>
+            <p>
+                <b>Tipo de cuero:</b> <span id="txtLeatherSell"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <b>Construcción:</b> <span id="txtConstructionSell"></span>
+            </p>
+            <p><b>Precio($):</b><input type="number" id="txtPriceSell" style="width: 100px; font-size: 12px; padding: 2px 5px"></p>
+            <p><b>Observación:</b> <span id="txtObservationSell"></span></p>
+            <p><b>Cantidad:</b> <input type="number" id="txtAmountSell" style="width: 100px; font-size: 12px; padding: 2px 5px" disabled></span></p>
+            <p>
+                <input type="checkbox" id="cheshowDiscount">&nbsp;&nbsp;
+                <span id="txtDis1Sell"></span><input type="checkbox" id="cheDis1Sell">&nbsp;&nbsp;
+                <span id="txtDis2Sell"></span><input type="checkbox" id="cheDis2Sell">&nbsp;&nbsp;
+                <span id="txtDis3Sell"></span><input type="checkbox" id="cheDis3Sell">&nbsp;&nbsp;
+                <span id="txtDisTot"></span>
+            </p>
+            <p><b>Total:</b> <span id="txtTotalSell"></span></p>
+            <hr>
+            <div style="display: flex">
+                <div style="display: block; border-right: 1px solid; padding-right: 30px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="number" id="txtClientSell" placeholder="Escriba la identificación">
+                        <button id="btnSearchClient" style="padding: 5px 10px;" title="Buscar cliente"><i class="fa fa-search"></i></button>
+                        <button id="btnAddClient" style="padding: 5px 10px;" title="Añadir cliente"><i class="fa fa-address-book"></i></button>
+                    </div>
+                    <p><b>Identificación:</b> <span id="txtIdentificationClient"></span></p>
+                    <p><b>Nombre:</b> <span id="txtNameClient"></span></p>
+                    <button id="btnAddProduct" title="Añadir producto"><i class="fa fa-cart-plus"></i></button>
+                </div>
+                <div style="display: block; margin-left: 5px; border-right: 1px solid; padding-right: 30px;">
+                    <p><b>RESUMEN</b></p>
+                    <p><b>Pares:</b> <span id="txtAmountRes">0</span> </p>
+                    <p>
+                        <b>SubT.($):</b> <span id="txtSubtotalRes">0</span> &nbsp;&nbsp;&nbsp;
+                        <b>Desc.($):</b> <span id="txtDiscountRes">0</span>
+                    </p>
+                    <p>
+                        <b>Abon.($):</b> <span id="txtAbonoRes">0</span> &nbsp;&nbsp;&nbsp;
+                        <b>Total($):</b> <span id="txtTotalRes">0</span>
+                    </p>
+                    <p>
+                        <input type="radio" name="txtPagoRes" value="EF" checked><span style="font-size: 14px;">Efectivo</span>&nbsp;
+                        <input type="radio" name="txtPagoRes" value="TR"><span style="font-size: 14px;">Transferencia</span>&nbsp;
+                        <input type="radio" name="txtPagoRes" value="TA"><span style="font-size: 14px;">Tarjeta</span>
+                    </p>
+                    <input type="text" id="txtObservacionRes" placeholder="Escriba la observación">
+                    <button id="btnConfirmSell"><b>Finalizar venta</b></button>
+                </div>
+                <div style="display: block; margin-left: 5px;">
+                    <p><b>OTRAS ACCIONES</b></p>
+                    <button id="btnAbono" style="width: 120px; margin-bottom: 16px;">
+                        <b>Abono</b>
+                    </button>
+                    <button id="btnCambio" style="width: 120px; margin-bottom: 16px;">
+                        <b>Cambio</b>
+                    </button>
+                    <button id="btnDevolucion" style="width: 120px; margin-bottom: 16px;">
+                        <b>Devolución</b>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modalAbono" class="modal">
+        <div class="modal-content">
+            <h2>Agregar abono</h2>
+            <input type="number" id="txtBuscarClienteAbono" placeholder="Buscar cliente">
+            <p style="text-align: left;"><b>Identificación: </b><span id="txtIdentificacionAbono"></span></p>
+            <p style="text-align: left;"><b>Nombre: </b><span id="txtClienteAbono"></span></p>
+            <input type="number" id="txtValorAbono" placeholder="Valor del abono">
+            <p style="text-align: left;">
+                <input type="checkbox" id="cheNuevoAbono" style="width: 20px;"><span>Nuevo producto</span>
+                <input type="number" id="txtTotalAbono" style="width: 225px;" placeholder="Escriba el total de la venta" disabled>
+            </p>
+            <p style="text-align: left">
+                <input type="radio" name="txtPagoAbo" value="Efectivo" style="width: 20px" checked ><span style="font-size: 14px;">Efectivo</span>&nbsp;
+                <input type="radio" name="txtPagoAbo" value="Transferencia" style="width: 20px"><span style="font-size: 14px;">Transferencia</span>&nbsp;
+                <input type="radio" name="txtPagoAbo" value="Tarjeta" style="width: 20px"><span style="font-size: 14px;">Tarjeta</span>
+            </p>
+            <input type="text" id="txtObservacionAbono" placeholder="Escriba la observación">
+            <br><br>
+
+            <div class="modal-buttons">
+                <button id="btnConfirmarAbono">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="btnCancelarAbono">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id='modalCambio' class='modal'>
+        <div class = 'modal-content'>
+            <h2>Cambios</h2>
+            <div style='display: flex; gap: 10px'>
+                <input 
+                    type ='number' 
+                    id ='txtBuscarVentaCambio' 
+                    placeholder ='Escriba la identificación del cliente'
+                    style = 'width: 220px; padding: 4px;'
+                >
+                <button id ='btnBuscarVentaCambio'>Buscar ventas</button>
+            </div>
+            <div id='elegirVenta' style="display: none">
+                <table style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <td colspan='4' style = 'font-size: 12px; background-color: black; color: white'>
+                                Ventas realizadas - <span id = 'txtClienteBuscarCambio'></span>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody id='tablaVentasRealizadas'>
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <hr style = 'border: none; height: 1px; margin: 2px; background-color: gainsboro'>
+            <b style = 'font-size: 12px'>Producto anterior</b>
+            <br>
+            <p style = 'text-align: left; font-size: 12px; margin: 2px'>
+                <span id = 'txtCodAnteriorCambio' style = 'display: none'></span>
+                <b>Nombre:</b><span id = 'txtNombreAnteriorCambio'></span> &nbsp;&nbsp;&nbsp;
+                <b>Talla: </b><span id = 'txtTallaAnteriorCambio'></span> &nbsp;&nbsp;&nbsp;
+                <b>Total: </b><span id = 'txtTotalAnteriorCambio'></span>
+            </p>
+            <hr style = 'border: none; height: 1px; margin: 2px; margin-bottom: 8px; background-color: gainsboro'>
+            <b style = 'font-size: 12px'>Producto nuevo</b>
+            <br>
+            <p style = 'text-align: left; font-size: 12px; margin: 2px'>
+                <input type="number" id="txtEscanearNuevoCambio" style="width: 60px; font-size: 12px; padding: 2px;" placeholder="Escanee"> &nbsp;&nbsp;&nbsp;
+                <span id = 'txtCodNuevoCambio' style = 'display: none'></span>
+                <b>Nombre:</b><span id = 'txtNombreNuevoCambio'></span> &nbsp;&nbsp;&nbsp;
+                <b>Talla: </b><span id = 'txtTallaNuevoCambio'></span> &nbsp;&nbsp;&nbsp;
+                <b>Total($): </b><span id='txtTotalNuevoCambio'></span>
+            </p>
+            <hr style = 'border: none; height: 1px; margin: 4px; background-color: gainsboro'>
+            <p style = 'text-align: left; font-size: 14px; margin: 8px'>
+                <b>Total($):</b><span id='txtTotalCambio'>0</span>
+            </p>
+            <div class='modal-buttons'>
+                <button id='btnConfirmarCambio'>
+                    <i class='fa-solid fa-check'></i> Confirmar
+                </button>
+                <button id='btnCancelarCambio'>
+                    <i class='fa-solid fa-times'></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id='modalDevolucion' class='modal'>
+        <div class = 'modal-content'>
+            <h2>Devoluciones</h2>
+            <div style='display: flex; gap: 10px'>
+                <input 
+                    type ='number' 
+                    id ='txtBuscarVentaDevolucion' 
+                    placeholder ='Escriba la identificación del cliente'
+                    style = 'width: 220px; padding: 4px;'
+                >
+                <button id ='btnBuscarVentaDevolucion'>Buscar ventas</button>
+            </div>
+            <div id='elegirVentaDevolucion' style='display: none'>
+                <table style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <td colspan='4' style = 'font-size: 12px; background-color: black; color: white'>
+                                Ventas realizadas - <span id = 'txtClienteBuscarDevolucion'></span>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody id='tablaVentasRealizadasDevolucion'>
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <hr style = 'border: none; height: 1px; margin: 2px; background-color: gainsboro'>
+            <b style = 'font-size: 12px'>Producto seleccionado</b>
+            <br>
+            <p style = 'text-align: left; font-size: 12px; margin: 2px'>
+                <span id = 'txtCodDevolucion' style = 'display: none'></span>
+                <b>Nombre:</b><span id = 'txtNombreDevolucion'></span> &nbsp;&nbsp;&nbsp;
+                <b>Talla: </b><span id = 'txtTallaDevolucion'></span> &nbsp;&nbsp;&nbsp;
+                <b>Total($): </b><span id = 'txtTotalDevolucion'></span>
+            </p>
+            <div class='modal-buttons'>
+                <button id='btnConfirmarDevolucion'>
+                    <i class='fa-solid fa-check'></i> Confirmar
+                </button>
+                <button id='btnCancelarDevolucion'>
+                    <i class='fa-solid fa-times'></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id='modalConfirmarVenta' class='modal'>
+        <div class = 'modal-content'>
+            <h2>Confirmar venta</h2>
+            <table style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <td colspan='7' style = 'font-size: 12px; background-color: black; color: white; text-align: center;'>Detalle de venta</td>
+                    </tr>
+                    <tr>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Modelo</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Color</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Talla</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Cantidad</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Subtotal($)</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Descuento($)</td>
+                        <td style = 'font-size: 12px; background-color: rgba(0, 0, 0, 0.6); color: white'>Total($)</td>
+                    </tr>
+                </thead>
+                <tbody id='tabConfirmarVenta'>
+                </tbody>
+            </table>
+            <input 
+                type ='text' 
+                id ='txtComprobanteVenta'
+                placeholder ='Escriba el número de comprobante *'
+                style = 'width: 500px; padding: 4px; margin: 15px 0px;'
+            >
+            <br>
+            <div class='modal-buttons'>
+                <button id='btnConfirmarVenta'>
+                    <i class='fa-solid fa-check'></i> Confirmar
+                </button>
+                <button id='btnCancelarVenta'>
+                    <i class='fa-solid fa-times'></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--REPORTES-->
+    <div id='divReportes' style='display: none'>
+        <div style='display: flex; gap: 10px'>
+            <button id='btnVentasDiario' style='padding: 7px 10px' disabled>Ventas diario</button>
+            <button id='btnVentasMensual' style='padding: 7px 10px'>Ventas mensual</button>
+            <button id='btnVentasAnual' style='padding: 7px 10px'>Ventas anual</button>
+            <button id='btnSolicitudes' style='padding: 7px 10px'>Solicitudes</button>
+            <button id='btnOtrasOpciones' style='padding: 7px 10px'>Otras opciones</button>
+            <div id='divFiltros' class="filtros">
+                <select id='txtCiudadRep'>
+                    <option value='Ambato'>Ambato</option>
+                    <option value='Cuenca'>Cuenca</option>
+                    <option value='Quito'>Quito</option>
+                </select>
+                <input type="date" id="txtFechaRep">
+                <button id="btnBuscarRep" title="Buscar"><i class="fa fa-search"></i></button>
+                <button id="btnDescargarRep" title="Descargar"><i class="fa fa-download"></i></button>
+            </div>
+        </div>
+        <br>
+        <div id='divVentasDia'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='11' style='text-align: center'>Reporte de ventas diario</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Ciudad</th>
+                        <td colspan='5' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiCiudadVentasDia'></span></td>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <td colspan='4' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiFechaVentasDia'></span></td>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modelo</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Color</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Talla</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Subtotal($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Descuento($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Total($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modalidad de pago</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Comprobante</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Observaciones</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Hora</th>
+                    </tr>
+                </thead>
+                <tbody id='tabVentasDia'>
+                </tbody>
+            </table>
+            <div id="divCierre" style="display: none; gap: 10px; margin-top: 20px; margin-bottom: 40px; justify-content: right;">
+                <div id="divMensajeCierre" style="border-radius: 10px; padding: 0px 10px; padding-top: 4px;">
+                    <b><span id="etiMensajeCierre" style="color: black;"></span></b>
+                </div>
+                <input
+                    id="txtFechaCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 150px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Fecha de cierre"
+                    disabled
+                />
+                <input
+                    id="txtDocumentoCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 200px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Comprobante o persona que recibe"
+                    disabled
+                />
+            </div>
+        </div>
+        <div id='divVentasMen' style='display: none'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='7' style='text-align: center'>Reporte de ventas mensual</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Ciudad</th>
+                        <td colspan='3' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiCiudadVentasMen'></span></td>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <td colspan='2' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiFechaVentasMen'></span></td>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modelo</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Color</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Talla</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Construcción</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Subtotal($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Total($)</th>
+                    </tr>
+                </thead>
+                <tbody id='tabVentasMen'>
+                </tbody>
+            </table>
+            <div style='display: flex; gap: 50px;'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan='3' style='text-align: center; padding: 4px'>Pares vendidos por talla</th>
+                        </tr>
+                        <tr>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Tallas</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Cantidad</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tabParesTal'>
+                    </tbody>
+                </table>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan='3' style='text-align: center; padding: 4px'>Pares vendidos por tipo de construcción</th>
+                        </tr>
+                        <tr>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Construcción</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Cantidad</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tabParesCon'>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id='divVentasAnu' style='display: none'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='13' style='text-align: center'>Reporte de ventas anual</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Identificación</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Cliente</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Dirección</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Pago</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Modelo</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Color</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Construcción</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Talla</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Cantidad</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Total($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Ciudad</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Observación</th>
+                    </tr>
+                </thead>
+                <tbody id='tabVentasAnu'>
+                </tbody>
+            </table>
+            <div id="divCierre" style="display: none; gap: 10px; margin-top: 20px; margin-bottom: 40px; justify-content: right;">
+                <div id="divMensajeCierre" style="border-radius: 10px; padding: 0px 10px; padding-top: 4px;">
+                    <b><span id="etiMensajeCierre" style="color: black;"></span></b>
+                </div>
+                <input
+                    id="txtFechaCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 150px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Fecha de cierre"
+                    disabled
+                />
+                <input
+                    id="txtDocumentoCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 200px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Comprobante o persona que recibe"
+                    disabled
+                />
+            </div>
+        </div>
+        <div id='divSolicitudes' style='display: none'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='9' style='text-align: center'>Reporte de productos solicitados</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Identificación</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Cliente</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Telefono</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Local</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Total($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Diferencia($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id='tabSolicitudes'>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <main id="fabrica">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button id="btnStockAmbato" style="padding: 5px 10px" disabled>Ambato</button>
+            <button id="btnStockCuenca" style="padding: 5px 10px">Cuenca</button>
+            <button id="btnStockQuito" style="padding: 5px 10px">Quito</button>
+        </div>
+        <div class="tableWrapper">  
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cuero</th>
+                        <th>34</th>
+                        <th>35</th>
+                        <th>36</th>
+                        <th>37</th>
+                        <th>38</th>
+                        <th>39</th>
+                        <th>40</th>
+                        <th>41</th>
+                        <th>42</th>
+                        <th>43</th>
+                        <th>44</th>
+                        <th style='text-align: right'>Total($): <span id='etiTotalGeneral'></span></th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="product-list">
+                    <tr><td>CARGANDO...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    
+    <!-- Modal de Confirmación -->
+    <div id="confirmation_modal" class="modal">
+        <div class="modal-content">
+            <h2>Confirmación</h2>
+            <p id="confirmation-message">¿Está seguro de realizar esta acción?</p>
+            <div class="modal-buttons">
+                <button id="confirm_action">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="cancel_action">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar producto -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <input type="text" id="product_name" placeholder="Nombre del producto" required>
+            <br><br>
+            <input type="text" id="product_leather" placeholder="Tipo de cuero">
+            <br><br>
+            <select id="product_construction">
+                <option value="Good Year Welt">Good Year Welt</option>
+                <option value="Cementado">Cementado</option>
+                <option value="Prefabricado">Prefabricado</option>
+                <option value="Accesorios">Accesorios</option>
+            </select>
+            <br><br>
+            <input type="number" id="product_price" placeholder="Precio">
+            <br><br>
+            <textarea id="product_observation" placeholder="Observacion"></textarea>
+            <div class="checkbox">
+                <input type="checkbox" id="product_discount">
+                <label>Aplica descuento</label>
+                <input type="number" style="width: 40px;" id="txtDis1" placeholder="%" disabled>
+                <input type="number" style="width: 40px;" id="txtDis2" placeholder="Ds.1" disabled>
+                <input type="number" style="width: 40px;" id="txtDis3" placeholder="Ds.2" disabled>
+            </div>
+            <div class="checkbox">
+                <input type="checkbox" id="cheTemporal">
+                <label>Producto temporal</label>
+            </div>
+            <input type="file" id="product_photo" accept="image/png, image/jpeg, image/jpg">
+            <img id="photo_preview" src="" alt="Vista previa de la imagen" style="display: none; max-width: 100%; height: 200px;">
+            <div class="modal-buttons">
+                <button id="save_product_btn">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="cancel_product_btn">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles y editar stock -->
+    <div id="detail_modal" class="modal">
+        <div class="detail-modal-content">
+            <div class="modal-content-detail">
+                <img id="detail_image" src="" class="detail-image" alt="Imagen del Producto">
+                <hr><hr>  
+                <div class="detail-text">
+                    <p style="margin: 5px 0px;">
+                        <strong>Nombre:</strong> 
+                        <input id="detail_name" style="padding: 4px"></input>
+                    </p>
+                    <p style="margin: 5px 0px;">
+                        <strong>Tipo de cuero:</strong> 
+                        <input id="detail_leather" style="padding: 4px"></input>
+                    </p>
+                    <p style="margin: 5px 0px;">
+                        <strong>Construcción:</strong>
+                        <select id="detail_construction" style="padding: 4px">
+                            <option value="Good Year Welt">Good Year Welt</option>
+                            <option value="Cementado">Cementado</option>
+                            <option value="Prefabricado">Prefabricado</option>
+                            <option value="Accesorios">Accesorios</option>
+                        </select>
+                    </p>
+                    <p style="margin: 5px 0px;">
+                        <strong>Precio($):</strong> 
+                        <input id="detail_price" style="padding: 4px" type="number"></input>
+                    </p>
+                    <p style="margin: 5px 0px; display: flex; align-items: center; gap: 10px;">
+                        <strong>Observación:</strong> 
+                        <textarea id="detail_observation" style="padding: 4px; width: 600px"></textarea>
+                    </p>
+                    <p style="margin: 5px 0px;">
+                        <strong>Aplica descuento:</strong> <span id="detail_discount"></span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <strong>Descuentos:</strong> 
+                        %<input id="detailDis1" style="padding: 4px; width: 30px;" type="number"></input>&nbsp;&nbsp;
+                        $<input id="detailDis2" style="padding: 4px; width: 30px;" type="number"></input>&nbsp;&nbsp;
+                        $<input id="detailDis3" style="padding: 4px; width: 30px;" type="number"></input>&nbsp;&nbsp;
+                    </p>
+                    <table>
+                        <tr>
+                            <td style="font-size: 12px; background-color: black; color: white;">34</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">35</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">36</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">37</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">38</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">39</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">40</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">41</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">42</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">43</td>
+                            <td style="font-size: 12px; background-color: black; color: white;">44</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t34" style="font-size: 14px;"></span>
+                            </td>
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t35" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t36" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t37" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t38" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t39" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t40" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t41" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t42" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t43" style="font-size: 14px;"></span>
+                            </td> 
+                            <td style="background-color: white; padding: 0px; color: black; text-align: center;">
+                                <span id="t44" style="font-size: 14px;"></span>
+                            </td> 
+                        </tr>
+                        <tr>
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t34" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td>
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t35" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t36" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t37" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t38" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t39" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t40" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t41" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t42" type="number" min="0" style="width: 35px; font-size: 14px; border: none;" >
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t43" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                            <td style="background-color: white; padding: 0px;">
+                                <input id="edit_t44" type="number" min="0" style="width: 35px; font-size: 14px; border: none;">
+                            </td> 
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="update_stock" disabled>Actualizar</button>
+                <button id="close_detail">Cerrar</button>
+            </div>
+            <br>  
+        </div>
+    </div>
+
+    <!-- Modal para escoger la talla del modelo -->
+    <div id="print_modal" class="modal">
+        <div class="modal-content">
+            <h3>Escoja la talla para generar la etiqueta</h3>
+            <select id="print_size">
+                <option value="34">34</option>
+                <option value="35">35</option>
+                <option value="36">36</option>
+                <option value="37">37</option>
+                <option value="38">38</option>
+                <option value="39">39</option>
+                <option value="40">40</option>
+                <option value="41">41</option>
+                <option value="42">42</option>
+                <option value="43">43</option>
+                <option value="44">44</option>
+            </select>
+            <br><br>
+            <div class="modal-buttons">
+                <button id="print_product_btn">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="cancel_print_btn">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para enviar productos -->
+    <div id="send_modal" class="modal">
+        <div class="modal-content">
+            <h2>Escanee el código del producto para agregar</h2>
+
+            <input type="text" id="code_scan" placeholder="Código del producto">
+            <br><br>
+            <select id="localSend">
+                <option value="">Seleccione un local</option>
+                <option value="Cuenca">Cuenca</option>
+                <option value="Quito">Quito</option>
+            </select>
+            <br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <td>Nombre</td>
+                        <td>Cuero</td>
+                        <td>Talla</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody id="listScans">
+                </tbody>
+            </table>
+            <div class="modal-buttons">
+                <button id="confirm_send_btn">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="cancel_send_btn">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--RECIBIR PRODUCTOS-->
+    <div id="recibir" style="display: none">
+        <table>
+            <thead>
+                <tr>
+                    <th>Origen</th>
+                    <th>Fecha</th>
+                    <th>Responsable</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="listaRecibidos">
+            </tbody>
+        </table>
+    </div>
+    <div id="modalDetalleRecibidos" class="modal">
+        <div class="modal-content">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Nombre</td>
+                        <td>Cuero</td>
+                        <td>Talla</td>
+                        <td>Recibir</td>
+                        <td>Devolver</td>
+                    </tr>
+                </thead>
+                <tbody id="listaDetalleRecibidos">
+                </tbody>
+            </table>
+            <div class="modal-buttons">
+                <button id="btnConfirmarRecibido" disabled>
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="btnCancelarRecibido">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar cliente -->
+    <div id="modalAddClient" class="modal">
+        <div class="modal-content">
+
+            <input type="number" id="txtIdentificationClientAdd" placeholder="Identificación *">
+            <br><br>
+            <input type="text" id="txtNameClientAdd" placeholder="Nombre *">
+            <br><br>
+            <input type="text" id="txtDirectionClientAdd" placeholder="Dirección *">
+            <br><br>
+            <input type="number" id="txtTelephoneClientAdd" placeholder="Número de celular *">
+            <br><br>
+            <input type="email" id="txtEmailClientAdd" placeholder="Correo electrónico *">
+            
+            <div class="modal-buttons">
+                <button id="btnSaveClient">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
+                <button id="btnCancelAddClient">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--CLIENTES-->
+    <div id="divClientes" style="display: none">
+        <table>
+            <thead>
+                <tr>
+                    <th>Identificación</th>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabClientes">
+            </tbody>
+        </table>
+    </div>
+    <div id='divEditarCliente' class='modal'>
+        <div class='modal-content'>
+            <h2>Editar cliente</h2>
+            <input type='number' id='txtIdentificacionClienteEdi' placeholder='Identificación *'>
+            <br><br>
+            <input type='text' id='txtNombreClienteEdi' placeholder='Nombre *'>
+            <br><br>
+            <input type='text' id='txtDireccionClienteEdi' placeholder='Dirección *'>
+            <br><br>
+            <input type='number' id='txtTelefonoClienteEdi' placeholder='Número de celular *'>
+            <br><br>
+            <input type='email' id='txtEmailClienteEdi' placeholder='Correo electrónico *'>
+            
+            <div class='modal-buttons'>
+                <button id='btnConfirmarEditarCli'>
+                    <i class='fa-solid fa-check'></i> Confirmar
+                </button>
+                <button id='btnCancelarEditarCli'>
+                    <i class='fa-solid fa-times'></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>V.1.2 &nbsp;--&nbsp; &copy;2025 DLC PROGRAMMING</p>
+    </footer>
+</body>
+</html>
