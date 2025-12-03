@@ -40,6 +40,9 @@
         <button id="add_product_btn" title="Añadir nuevo producto">
             <i class="fas fa-plus"></i>
         </button>
+        <button id="btnReportes" title="Ver reportes">
+            <i class="fa fa-file-text"></i>
+        </button>
         <button id="home_btn" style="display: none" title="Regresar al inicio">
             <i class="fa fa-home"></i>
         </button>
@@ -71,7 +74,7 @@
                 <b>Tipo de cuero:</b> <span id="txtLeatherSell"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <b>Construcción:</b> <span id="txtConstructionSell"></span>
             </p>
-            <p><b>Precio:</b> <span id="txtPriceSell"></span></p>
+            <p><b>Precio($):</b><input type="number" id="txtPriceSell" style="width: 100px; font-size: 12px; padding: 2px 5px"></p>
             <p><b>Observación:</b> <span id="txtObservationSell"></span></p>
             <p><b>Cantidad:</b> <input type="number" id="txtAmountSell" style="width: 100px; font-size: 12px; padding: 2px 5px" disabled></span></p>
             <p>
@@ -300,6 +303,147 @@
         </div>
     </div>
 
+    <!--REPORTES-->
+    <div id='divReportes' style='display: none'>
+        <div style='display: flex; gap: 10px'>
+            <button id='btnVentasDiario' style='padding: 7px 10px' disabled>Ventas diario</button>
+            <button id='btnVentasMensual' style='padding: 7px 10px'>Ventas mensual</button>
+            <button id='btnSolicitudes' style='padding: 7px 10px'>Solicitudes</button>
+            <div id='divFiltros' class="filtros">
+                <input type="date" id="txtFechaRep">
+                <button id="btnBuscarRep" title="Buscar"><i class="fa fa-search"></i></button>
+            </div>
+        </div>
+        <br>
+        <div id='divVentasDia'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='11' style='text-align: center'>Reporte de ventas diario</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Ciudad</th>
+                        <td colspan='5' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'>Ambato</td>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <td colspan='4' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiFechaVentasDia'></span></td>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modelo</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Color</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Talla</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Subtotal($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Descuento($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Total($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modalidad de pago</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Comprobante</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Observaciones</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Hora</th>
+                    </tr>
+                </thead>
+                <tbody id='tabVentasDia'>
+                </tbody>
+            </table>
+            <div id="divCierre" style="display: none; gap: 10px; margin-top: 20px; margin-bottom: 40px; justify-content: right;">
+                <div id="divMensajeCierre" style="border-radius: 10px; padding: 0px 10px; padding-top: 4px;">
+                    <b><span id="etiMensajeCierre" style="color: black;"></span></b>
+                </div>
+                <input
+                    id="txtFechaCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 150px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Fecha de cierre"
+                    disabled
+                />
+                <input
+                    id="txtDocumentoCierre"
+                    type="text" 
+                    style="border: 0px; border-radius: 8px; width: 200px; font-size: 14px; padding: 2px; background: white;" 
+                    placeholder="Comprobante o persona que recibe"
+                    disabled
+                />
+            </div>
+        </div>
+        <div id='divVentasMen' style='display: none'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='7' style='text-align: center'>Reporte de ventas mensual</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Ciudad</th>
+                        <td colspan='3' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'>Ambato</td>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <td colspan='2' style='background: rgb(255, 255, 255); padding: 8px; color: black; font-size: 14px;'><span id='etiFechaVentasMen'></span></td>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Modelo</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Color</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Talla</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Construcción</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Subtotal($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.85); padding: 8px'>Total($)</th>
+                    </tr>
+                </thead>
+                <tbody id='tabVentasMen'>
+                </tbody>
+            </table>
+            <div style='display: flex; gap: 50px;'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan='3' style='text-align: center; padding: 4px'>Pares vendidos por talla</th>
+                        </tr>
+                        <tr>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Tallas</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Cantidad</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tabParesTal'>
+                    </tbody>
+                </table>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan='3' style='text-align: center; padding: 4px'>Pares vendidos por tipo de construcción</th>
+                        </tr>
+                        <tr>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Construcción</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Cantidad</th>
+                            <th style='background: rgba(0, 0, 0, 0.6); padding: 4px'>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tabParesCon'>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id='divSolicitudes' style='display: none'>
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan='9' style='text-align: center'>Reporte de productos solicitados</th>
+                    </tr>
+                    <tr>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Fecha</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Identificación</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Cliente</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Telefono</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Local</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Abono($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Total($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Diferencia($)</th>
+                        <th style='background: rgba(0, 0, 0, 0.6); padding: 8px'>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id='tabSolicitudes'>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <main id="fabrica">
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <button id="btnStockAmbato" style="padding: 5px 10px" disabled>Ambato</button>
@@ -374,9 +518,10 @@
                 <input type="number" style="width: 40px;" id="txtDis2" placeholder="Ds.1" disabled>
                 <input type="number" style="width: 40px;" id="txtDis3" placeholder="Ds.2" disabled>
             </div>
-            <!--Contenedor para mostrar alertas-->
-            <div class="alert-message" id="alert_message_product"></div>
-
+            <div class="checkbox">
+                <input type="checkbox" id="cheTemporal">
+                <label>Producto temporal</label>
+            </div>
             <input type="file" id="product_photo" accept="image/png, image/jpeg, image/jpg">
             <img id="photo_preview" src="" alt="Vista previa de la imagen" style="display: none; max-width: 100%; height: 200px;">
             <div class="modal-buttons">
@@ -685,7 +830,7 @@
     </div>
 
     <footer class="footer">
-        <p>V.1.2 &nbsp;--&nbsp; &copy;2025 DLC PROGRAMMING</p>
+        <p>V.1.3 &nbsp;--&nbsp; &copy;2025 DLC PROGRAMMING</p>
     </footer>
 </body>
 </html>

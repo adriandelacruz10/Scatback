@@ -268,6 +268,36 @@ tr:nth-child(even) {
     color: #fff;
 }
 
+/*REPORTES*/
+.filtros{
+    margin-left: 30px;
+    display: flex;
+    gap: 4px;
+}
+.filtros select{
+    width: 150px;
+    padding: 4px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s ease-in-out;
+    background: #f9f9f9;
+}
+.filtros input{
+    width: 150px;
+    padding: 4px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s ease-in-out;
+    background: #f9f9f9;
+}
+.filtros button{
+    padding: 4px 12px;
+}
+
 /*MODAL CONFIRMACION*/
 .modal {
     display: none;

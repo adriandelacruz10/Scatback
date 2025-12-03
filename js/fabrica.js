@@ -31,6 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }else{
                 querySnapshot.forEach((doc) => {
                     const product = doc.data();
+                    let btnEditarTab = '';
+                    if(btnStockAmbato.disabled){
+                        btnEditarTab = `
+                            <button class="edit_btn" data-id="${doc.id}" title="Editar información">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        `;
+                    }
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${product.nombre}</td>
@@ -50,9 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <button class="view_btn" data-id="${doc.id}" title="Ver mas detalles">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <button class="edit_btn" data-id="${doc.id}" title="Editar información">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
+                            ${btnEditarTab}
                             <button 
                                 class="print_btn" 
                                 data-id="${doc.id}"
@@ -138,7 +144,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function attachEventListeners() {
         document.querySelectorAll(".view_btn").forEach(button => {
             button.addEventListener("click", function () {
-                showProductDetails(this.dataset.id);
+                let local;
+                if(btnStockAmbato.disabled){
+                    local = 'PRODUCTOS';
+                }
+                if(btnStockCuenca.disabled){
+                    local = 'CUENCA';
+                }
+                if(btnStockQuito.disabled){
+                    local = 'QUITO';
+                }
+                showProductDetails(local, this.dataset.id);
             });
         });
 
@@ -155,8 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });       
     }
 
-    function showProductDetails(productId) {
-        db.collection("PRODUCTOS").doc(productId).get().then((doc) => {
+    function showProductDetails(local, productId) {
+        db.collection(local).doc(productId).get().then((doc) => {
             if (doc.exists) {
                 const product = doc.data();
                 detailImage.src = product.foto;
@@ -649,6 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const txtDis2 = document.getElementById("txtDis2");
     const txtDis3 = document.getElementById("txtDis3");
     const productDiscountCheck = document.getElementById("product_discount");
+    const cheTemporal = document.getElementById("cheTemporal");
 
     addProductBtn.addEventListener("click", function () {
         productModal.style.display = "flex";
@@ -703,18 +720,24 @@ document.addEventListener("DOMContentLoaded", () => {
             while (docExists) {
                 codigo = Math.floor(10000 + Math.random() * 90000).toString();
                 const docRef = await db.collection('PRODUCTOS').doc(codigo).get();
+                setTimeout(() =>{}, 500);
                 docExists = docRef.exists;
             }
 
+            let tem = cheTemporal.checked ? 'X' : '';
             await agregarProducto('PRODUCTOS', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
             await agregarProducto('CUENCA', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
             await agregarProducto('QUITO', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
+            setTimeout(() =>{}, 500);
 
             document.getElementById("product_name").value = '';
             document.getElementById("product_leather").value = '';
@@ -734,32 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }catch(e){
             showAlert(e.message, 'E');
         }
-    })
-    async function agregarProducto(local, cod, nom, cue, con, pre, des, obs, fot){
-        await db.collection(local).doc(cod).set({
-            nombre: nom,
-            cuero: cue,
-            construccion: con,
-            precio: parseFloat(pre),
-            descuento: des,
-            d1: txtDis1.value,
-            d2: txtDis2.value,
-            d3: txtDis3.value,
-            observacion: obs,
-            foto: fot,
-            t34: 0,
-            t35: 0,
-            t36: 0,
-            t37: 0,
-            t38: 0,
-            t39: 0,
-            t40: 0,
-            t41: 0,
-            t42: 0,
-            t43: 0,
-            t44: 0
-        });
-    }
+    });
 
     productDiscountCheck.addEventListener("change", function(event) {
         if(event.target.checked){
@@ -1233,6 +1231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btnOpenSend.style.display = "none";
         addProductBtn.style.display = "none";
         btnReceiveProducts.style.display = 'none';
+        btnReportes.style.display = 'none';
         btnHome.style.display = "flex";
         txtScanSell.style.display = "flex";
         btnClientes.style.display = 'none';
@@ -1256,7 +1255,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     txtSizeSell.textContent = size.toString();
                     txtLeatherSell.textContent = product.cuero;
                     txtConstructionSell.textContent = product.construccion;
-                    txtPriceSell.textContent = "$" + product.precio;
+                    txtPriceSell.value = product.precio;
                     txtObservationSell.textContent = product.observacion;
                     txtAmountSell.disabled = false;
                     txtAmountSell.value = 1;
@@ -1309,9 +1308,17 @@ document.addEventListener("DOMContentLoaded", () => {
         tabStockDisponible.appendChild(row1);
         tabStockDisponible.appendChild(row2);
     }
+    txtPriceSell.addEventListener("change", function({ target }) {
+        const tot = target.value * txtAmountSell.value;
+        txtTotalSell.textContent = "$" + tot;
+        txtDisTot.textContent = "$0";
+        cheDis1Sell.checked = false;
+        cheDis2Sell.checked = false;
+        cheDis3Sell.checked = false;
+    });
 
     txtAmountSell.addEventListener("change", function({ target }) {
-        const act = txtPriceSell.textContent.replace("$", "");
+        const act = txtPriceSell.value;
         const tot = act * target.value;
         txtTotalSell.textContent = "$" + tot;
         txtDisTot.textContent = "$0";
@@ -1321,7 +1328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cheshowDiscount.addEventListener("change", function({ target }) {
-        const act = txtPriceSell.textContent.replace("$", "") * txtAmountSell.value;
+        const act = txtPriceSell.value * txtAmountSell.value;
         if(target.checked){
             cheDis1Sell.style.display = "inline";
             cheDis2Sell.style.display = "inline";
@@ -1344,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cheDis1Sell.addEventListener("change", function({ target }) {
-        const act = txtPriceSell.textContent.replace("$", "") * txtAmountSell.value;
+        const act = txtPriceSell.value * txtAmountSell.value;
         if(target.checked){
             const des = txtDis1Sell.textContent.replace("%", "");
             const tot = act - (act * des / 100);
@@ -1359,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cheDis2Sell.addEventListener("change", function({ target }) {
-        const act = txtPriceSell.textContent.replace("$", "") * txtAmountSell.value;
+        const act = txtPriceSell.value * txtAmountSell.value;
         if(target.checked){
             const des = txtDis2Sell.textContent.replace("$", "");
             const tot = act - (des * txtAmountSell.value);
@@ -1374,7 +1381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cheDis3Sell.addEventListener("change", function({ target }) {
-        const act = txtPriceSell.textContent.replace("$", "") * txtAmountSell.value;
+        const act = txtPriceSell.value * txtAmountSell.value;
         if(target.checked){
             const des = txtDis3Sell.textContent.replace("$", "");
             const tot = act - (des * txtAmountSell.value);
@@ -1435,13 +1442,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         cue: txtLeatherSell.textContent,
                         con: txtConstructionSell.textContent,
                         tal: txtSizeSell.textContent,
-                        pre: txtPriceSell.textContent.replace("$",""),
+                        pre: txtPriceSell.value,
                         can: txtAmountSell.value,
                         des: txtDisTot.textContent.replace("$",""),
                         tot: txtTotalSell.textContent.replace("$",""),
                     });
-                     txtAmountRes.textContent = parseInt(txtAmountRes.textContent) + parseInt(txtAmountSell.value);
-                    txtSubtotalRes.textContent = parseFloat(txtSubtotalRes.textContent) + parseFloat(txtPriceSell.textContent.replace("$",""));
+                    txtAmountRes.textContent = parseInt(txtAmountRes.textContent) + parseInt(txtAmountSell.value);
+                    txtSubtotalRes.textContent = parseFloat(txtSubtotalRes.textContent) + (parseFloat(txtPriceSell.value) * parseInt(txtAmountSell.value));
                     txtDiscountRes.textContent = parseFloat(txtDiscountRes.textContent) + parseFloat(txtDisTot.textContent.replace("$",""));
                     txtTotalRes.textContent = (parseFloat(txtSubtotalRes.textContent) - parseFloat(txtDiscountRes.textContent) - parseFloat(txtAbonoRes.textContent)).toFixed(2);
                     imgSell.removeAttribute("src");
@@ -1449,7 +1456,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     txtSizeSell.textContent = "";
                     txtLeatherSell.textContent = "";
                     txtConstructionSell.textContent = "";
-                    txtPriceSell.textContent = "";
+                    txtPriceSell.value = "";
                     txtObservationSell.textContent = "";
                     txtAmountSell.disabled = true;
                     txtAmountSell.value = "";
@@ -1573,8 +1580,11 @@ document.addEventListener("DOMContentLoaded", () => {
     btnHome.addEventListener("click", function() {
         divFabrica.style.display = "block";
         divVentas.style.display = "none";
+        divReportes.style.display = "none";
+        btnReportes.style.display = 'flex';
         btnSell.style.display = "flex";
         btnOpenSend.style.display = "flex";
+        btnHome.style.display = "flex";
         addProductBtn.style.display = "flex";
         btnHome.style.display = "none";
         txtScanSell.style.display = "none";
@@ -1586,7 +1596,7 @@ document.addEventListener("DOMContentLoaded", () => {
         txtSizeSell.textContent = "";
         txtLeatherSell.textContent = "";
         txtConstructionSell.textContent = "";
-        txtPriceSell.textContent = "";
+        txtPriceSell.value = "";
         txtObservationSell.textContent = "";
         txtAmountSell.disabled = true;
         txtAmountSell.value = "";
@@ -2006,7 +2016,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 txtSizeSell.textContent = "";
                 txtLeatherSell.textContent = "";
                 txtConstructionSell.textContent = "";
-                txtPriceSell.textContent = "";
+                txtPriceSell.value = "";
                 txtObservationSell.textContent = "";
                 txtAmountSell.disabled = true;
                 txtAmountSell.value = "";
@@ -2048,6 +2058,387 @@ document.addEventListener("DOMContentLoaded", () => {
         txtComprobanteVenta.value = '';
         modalConfirmarVenta.style.display = 'none';
     })
+
+    //REPORTES
+    const btnReportes = document.getElementById('btnReportes');
+    const divReportes = document.getElementById('divReportes');
+    const btnVentasDiario = document.getElementById('btnVentasDiario');
+    const btnVentasMensual = document.getElementById('btnVentasMensual');
+    const btnSolicitudes = document.getElementById('btnSolicitudes');
+    const divFiltros = document.getElementById('divFiltros');
+    const txtFechaRep = document.getElementById('txtFechaRep');
+    const btnBuscarRep = document.getElementById('btnBuscarRep');
+    const divVentasDia = document.getElementById('divVentasDia');
+    const etiFechaVentasDia = document.getElementById('etiFechaVentasDia');
+    const tabVentasDia = document.getElementById('tabVentasDia');
+    const divVentasMen = document.getElementById('divVentasMen');
+    const etiFechaVentasMen = document.getElementById('etiFechaVentasMen');
+    const tabVentasMen = document.getElementById('tabVentasMen');
+    const tabParesTal = document.getElementById('tabParesTal');
+    const tabParesCon = document.getElementById('tabParesCon');
+    const divSolicitudes = document.getElementById('divSolicitudes');
+    const tabSolicitudes = document.getElementById('tabSolicitudes');
+    const divCierre = document.getElementById('divCierre');
+    const divMensajeCierre = document.getElementById('divMensajeCierre');
+    const etiMensajeCierre = document.getElementById('etiMensajeCierre');
+    const txtFechaCierre = document.getElementById('txtFechaCierre');
+    const txtDocumentoCierre = document.getElementById('txtDocumentoCierre');
+
+    btnReportes.addEventListener('click', function () {
+        divReportes.style.display = 'block';
+        btnHome.style.display = 'flex';
+        divFabrica.style.display = 'none';
+        divRecibir.style.display = 'none';
+        btnSell.style.display = 'none';
+        btnOpenSend.style.display = 'none';
+        btnReceiveProducts.style.display = 'none';
+        addProductBtn.style.display = 'none';
+        btnReportes.style.display = 'none';
+        txtScanSell.style.display = 'none';
+        btnClientes.style.display = 'none';
+    })
+    btnVentasDiario.addEventListener('click', function () {
+        divFiltros.style.display = 'flex';
+        divVentasDia.style.display = 'block';
+        btnVentasMensual.disabled = false;
+        btnSolicitudes.disabled = false;
+        divVentasMen.style.display = 'none';
+        divSolicitudes.style.display = 'none';
+        btnVentasDiario.disabled = true;
+    })
+    btnVentasMensual.addEventListener('click', function () {
+        divFiltros.style.display = 'flex';
+        divVentasMen.style.display = 'block';
+        btnVentasDiario.disabled = false;
+        btnSolicitudes.disabled = false;
+        divVentasDia.style.display = 'none';
+        divSolicitudes.style.display = 'none';
+        btnVentasMensual.disabled = true;
+    })
+    btnSolicitudes.addEventListener('click', function () {
+        divSolicitudes.style.display = 'block';
+        btnVentasDiario.disabled = false;
+        btnVentasMensual.disabled = false;
+        divFiltros.style.display = 'none';
+        divVentasDia.style.display = 'none';
+        divVentasMen.style.display = 'none';
+        btnSolicitudes.disabled = true;
+        reporteSolicitudes();
+    })
+    btnBuscarRep.addEventListener('click', async function () {
+        if(txtFechaRep.value == ''){
+            showAlert('Debe escoger una fecha para generar el reporte', 'E');
+        }else{
+            try{
+                showAlert('Cargando...', 'L');
+                if(btnVentasDiario.disabled){
+                    await reporteDiario();
+                }
+                if(btnVentasMensual.disabled){
+                    await reporteMensual();
+                }
+            }catch(e){
+                showAlert(e.message, 'E');
+            }
+        }
+    })
+    async function reporteDiario(){
+        divCierre.style.display = 'none';
+        tabVentasDia.innerHTML = '';
+        const ventas = await obtenerVentas('DI', 'Ambato', txtFechaRep.value);
+        const abonos = await obtenerAbonos('DI', 'Ambato', txtFechaRep.value);
+        if(ventas == null && abonos == null){
+            showAlert('No existen datos para los filtos seleccionados', 'E');
+            return;
+        }
+        let tot = 0;
+        let efe = 0;
+        let tra = 0;
+        let tar = 0;
+        if(ventas != null){
+            ventas.forEach((doc) => {
+                const venta = doc.data();
+                let pago;
+                let abo = parseFloat(venta.abono);
+                switch (venta.pago) {
+                    case 'EF':
+                        pago = 'Efectivo';
+                        break;
+                    case 'TR':
+                        pago = 'Transferencia';
+                        break;
+                    case 'TA':
+                        pago = 'Tarjeta';
+                        break;
+                }
+                venta.zdetalles.forEach((det) => {
+                    switch (venta.pago) {
+                        case 'EF':
+                            efe = parseFloat(efe) + parseFloat(det.tot) - abo;
+                            break;
+                        case 'TR':
+                            tra = parseFloat(tra) + parseFloat(det.tot) - abo;
+                            break;
+                        case 'TA':
+                            tar = parseFloat(tar) + parseFloat(det.tot) - abo;
+                            break;
+                    }
+                    const row = document.createElement('tr');
+                    tot = parseFloat(tot) + parseFloat(det.tot) - abo;
+                    row.innerHTML = `
+                        <td style='font-size: 14px'>${det.nom}</td>
+                        <td style='font-size: 14px'>${det.cue}</td>
+                        <td style='font-size: 14px'>${det.tal}</td>
+                        <td style='font-size: 14px'>${det.pre}</td>
+                        <td style='font-size: 14px'>${det.des}</td>
+                        <td style='font-size: 14px'>${abo}</td>
+                        <td style='font-size: 14px; text-align: right'>${(det.tot - abo).toFixed(2)}</td>
+                        <td style='font-size: 14px'>${pago}</td>
+                        <td style='font-size: 14px'>${venta.comprobante}</td>
+                        <td style='font-size: 14px'>${venta.observacion}</td>
+                        <td style='font-size: 14px'>${venta.hora}<span style='display:none'>${doc.id}</span></td>
+                    `;
+                    tabVentasDia.appendChild(row);
+                    abo = 0;
+                });
+            });
+        }
+        if(abonos != null){
+            abonos.forEach((doc) => {
+                const abono = doc.data();
+                switch (abono.pago) {
+                    case 'Efectivo':
+                        efe = parseFloat(efe) + parseFloat(abono.abono);
+                        break;
+                    case 'Transferencia':
+                        tra = parseFloat(tra) + parseFloat(abono.abono);
+                        break;
+                    case 'Tarjeta':
+                        tar = parseFloat(tar) + parseFloat(abono.abono);
+                        break;
+                }
+                    
+                const row = document.createElement('tr');
+                tot = parseFloat(tot) + parseFloat(abono.abono);
+                row.innerHTML = `
+                    <td style='font-size: 14px'>Abono</td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'>${abono.abono}</td>
+                    <td style='font-size: 14px; text-align: right'>${parseFloat(abono.abono).toFixed(2)}</td>
+                    <td style='font-size: 14px'>${abono.pago}</td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'>${abono.nuevo == 'X' ? 'Producto nuevo' : 'Producto existente'}</td>
+                    <td style='font-size: 14px'>${abono.hora}<span style='display:none'>${doc.id}</span></td>
+                `;
+                tabVentasDia.appendChild(row);
+            });
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td colspan='6'>Total($)</td>
+            <td style = 'text-align: right'><b>${tot.toFixed(2)}</b></td>
+            <td colspan='4'></td>
+        `;
+        tabVentasDia.appendChild(row);
+        const rowEfe = document.createElement('tr');
+        rowEfe.innerHTML = `
+            <td colspan='6' style='font-size: 14px'>Efectivo($)</td>
+            <td style='font-size: 14px; text-align: right'>${efe.toFixed(2)}</td>
+            <td colspan='4'></td>
+        `;
+        tabVentasDia.appendChild(rowEfe);
+        const rowTra = document.createElement('tr');
+        rowTra.innerHTML = `
+            <td colspan='6' style='font-size: 14px'>Transferencia($)</td>
+            <td style='font-size: 14px; text-align: right'>${tra.toFixed(2)}</td>
+            <td colspan='4'></td>
+        `;
+        tabVentasDia.appendChild(rowTra);
+        const rowTar = document.createElement('tr');
+        rowTar.innerHTML = `
+            <td colspan='6' style='font-size: 14px'>Tarjeta($)</td>
+            <td style='font-size: 14px; text-align: right'>${tar.toFixed(2)}</td>
+            <td colspan='4'></td>
+        `;
+        tabVentasDia.appendChild(rowTar);
+        etiFechaVentasDia.textContent = txtFechaRep.value;
+        await verificarCierre();
+        showAlert('', 'C');
+    }
+    async function reporteMensual(){
+        tabVentasMen.innerHTML = '';
+        const ventas = await obtenerVentas('ME', 'Ambato', txtFechaRep.value);
+        const abonos = await obtenerAbonos('ME', 'Ambato', txtFechaRep.value);
+
+        if(ventas == null && abonos == null){
+            showAlert('No existen datos para los filtos seleccionados', 'E');
+            return;
+        }
+        const tallas = {};
+        let can = 0;
+        let tot = 0;
+        let cem = 0;
+        let god = 0;
+        let pre = 0;
+        if(ventas != null){
+            ventas.forEach((doc) => {
+                const venta = doc.data();
+                let abo = parseFloat(venta.abono);
+                venta.zdetalles.forEach((det) => {
+                    const row = document.createElement('tr');
+                    tot = parseFloat(tot) + parseFloat(det.tot) - abo;
+                    can++;
+                    if (!tallas[det.tal]) {
+                        tallas[det.tal] = {
+                            cantidad: 0,
+                            total: 0
+                        };
+                    }
+                    tallas[det.tal].cantidad += 1;
+                    tallas[det.tal].total += parseFloat(det.tot);
+                    switch(det.con){
+                        case 'Cementado':
+                            cem += 1;
+                            break;
+                        case 'Good Year Welt':
+                            god += 1;
+                            break;
+                        case 'Prefabricado':
+                            pre += 1;
+                            break;
+                    }
+                    row.innerHTML = `
+                        <td style='font-size: 14px'>${det.nom}</td>
+                        <td style='font-size: 14px'>${det.cue}</td>
+                        <td style='font-size: 14px'>${det.tal}</td>
+                        <td style='font-size: 14px'>${det.con}</td>
+                        <td style='font-size: 14px'>${det.tot}</td>
+                        <td style='font-size: 14px'>${abo}</td>
+                        <td style='font-size: 14px; text-align: right''>${(det.tot - abo).toFixed(2)}</td>
+                    `;
+                    tabVentasMen.appendChild(row);
+                    abo = 0;
+                });
+            });
+        }
+        if(abonos != null){
+            abonos.forEach((doc) => {
+                const abono = doc.data();
+                const row = document.createElement('tr');
+                tot = parseFloat(tot) + parseFloat(abono.abono);
+                row.innerHTML = `
+                    <td style='font-size: 14px'>Abono</td>
+                    <td style='font-size: 14px'>${abono.nuevo == 'X' ? 'Producto nuevo' : 'Producto existente'}</td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'></td>
+                    <td style='font-size: 14px'>${abono.abono}</td>
+                    <td style='font-size: 14px; text-align: right''>${parseFloat(abono.abono).toFixed(2)}</td>
+                `;
+                tabVentasMen.appendChild(row);
+            });
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td colspan='6'>Total($)</td>
+            <td style='text-align: right''><b>${tot.toFixed(2)}</b></td>
+        `;
+        tabVentasMen.appendChild(row);
+        const aux = txtFechaRep.value.split('-');
+        etiFechaVentasMen.textContent = aux[1] + '-' + aux[0];
+        if(can > 0){
+            reporteTallas(tallas, can);
+            reporteConstruccion(cem, god, pre, can);
+        }
+        showAlert('', 'C');
+    }
+    function reporteTallas(tallas, can){
+        tabParesTal.innerHTML = '';
+        for (const tal in tallas) {
+            const cantidad = tallas[tal].cantidad;
+            tallas[tal].porcentaje = cantidad / can * 100 + '%';
+        }
+        for (const [tal, data] of Object.entries(tallas)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style='font-size: 14px; padding: 4px'>${tal}</td>
+                <td style='font-size: 14px; padding: 4px'>${data.cantidad}</td>
+                <td style='font-size: 14px; padding: 4px'>${Math.round(parseFloat(data.porcentaje))}%</td>
+            `;
+            tabParesTal.appendChild(row);
+        }
+    }
+    function reporteConstruccion(cem, god, pre, can){
+        tabParesCon.innerHTML = '';
+        const row1 = document.createElement('tr');
+        row1.innerHTML = `
+            <td style='font-size: 14px; padding: 4px'>Cementado</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(cem)}</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(cem / can * 100)}%</td>
+        `;
+        tabParesCon.appendChild(row1);
+        const row2 = document.createElement('tr');
+        row2.innerHTML = `
+            <td style='font-size: 14px; padding: 4px'>Good Year Welt</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(god)}</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(god / can * 100)}%</td>
+        `;
+        tabParesCon.appendChild(row2);
+        const row3 = document.createElement('tr');
+        row3.innerHTML = `
+            <td style='font-size: 14px; padding: 4px'>Prefabricado</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(pre)}</td>
+            <td style='font-size: 14px; padding: 4px'>${Math.round(pre / can * 100)}%</td>
+        `;
+        tabParesCon.appendChild(row3);
+    }
+    async function reporteSolicitudes(){
+        showAlert('Cargando...', 'L');
+        tabSolicitudes.innerHTML = '';
+        const abonos = await obtenerSolicitudes();
+        if(abonos == null){
+            showAlert('No existen datos para los filtos seleccionados', 'E');
+            return;
+        }
+        abonos.forEach(async (doc) => {
+            const abono = doc.data();
+            const row = document.createElement('tr');
+            const cliente = await obtenerCliente(abono.identificacion);
+            row.innerHTML = `
+                <td style='font-size: 14px'>${abono.fecha}</td>
+                <td style='font-size: 14px'>${abono.identificacion}</td>
+                <td style='font-size: 14px'>${cliente.nombre}</td>
+                <td style='font-size: 14px'>${cliente.telefono}</td>
+                <td style='font-size: 14px'>${abono.local}</td>
+                <td style='font-size: 14px'>${abono.abono}</td>
+                <td style='font-size: 14px'>${abono.total}</td>
+                <td style='font-size: 14px'>${abono.total - abono.abono}</td>
+                <td style='font-size: 14px'>${abono.observacion}</td>
+            `;
+            tabSolicitudes.appendChild(row);
+        });
+        showAlert('', 'C');
+    }
+    async function verificarCierre(){
+        const data = await buscarCierre('Cuenca', txtFechaRep.value);
+        if(data == null){
+            divMensajeCierre.style.background = '#ef9a9a';
+            etiMensajeCierre.textContent = 'Cierre de caja pendiente';
+            txtFechaCierre.value = '';
+            txtDocumentoCierre.value = '';
+        }else{
+            divMensajeCierre.style.background = '#5ccb5f';
+            etiMensajeCierre.textContent = 'Cierre de caja realizado';
+            txtFechaCierre.value = data.cierre + ' ' + data.hora ;
+            txtDocumentoCierre.value = data.documento;
+        }
+        divCierre.style.display = 'flex';
+    }
 
     //CLIENTES 
     const btnClientes = document.getElementById('btnClientes');
@@ -2198,30 +2589,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alertMessage.style.background = "#e0e0e0";
         }else if(type == "C"){
             alertMessage.style.display = "none";
-        }
-    }
-
-    //ALERTAS MODAL AGREGAR
-    const alertMessageProduct = document.getElementById("alert_message_product");
-
-    function showAlertProduct(message, type) {
-        alertMessageProduct.innerText = message;
-        alertMessageProduct.style.display = "block";
-        if(type == "S"){
-            alertMessageProduct.style.background = "#5ccb5f";
-            setTimeout(() => {
-                alertMessageProduct.style.display = "none";
-            }, 3000);
-        }else if(type == "E"){
-            alertMessageProduct.style.background = "#ef9a9a";
-            setTimeout(() => {
-                alertMessageProduct.style.display = "none";
-            }, 3000);
-        }else if(type == "L"){
-            alertMessageProduct.style.background = "#e0e0e0";
-            setTimeout(() => {
-                alertMessageProduct.style.display = "none";
-            }, 5000);
         }
     }
 

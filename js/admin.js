@@ -343,7 +343,13 @@ document.addEventListener("DOMContentLoaded", () => {
             t42: num_t42,
             t43: num_t43,
             t44: num_t44
-        }).then(() => {
+        }).then(async () => {
+            await actualizarProducto('PRODUCTOS', productId, detailName.value, detailLeather.value, detailConstruction.value, detailPrice.value, 
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
+            await actualizarProducto('CUENCA', productId, detailName.value, detailLeather.value, detailConstruction.value, detailPrice.value, 
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
+            await actualizarProducto('QUITO', productId, detailName.value, detailLeather.value, detailConstruction.value, detailPrice.value, 
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
             if(btnStockAmbato.disabled && (editDetailTxt34.value !== '' || editDetailTxt35.value !== '' ||
                 editDetailTxt36.value !== '' || editDetailTxt37.value !== '' || editDetailTxt38.value !== '' ||
                 editDetailTxt39.value !== '' || editDetailTxt40.value !== '' || editDetailTxt41.value !== '' ||
@@ -746,14 +752,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 docExists = docRef.exists;
             }
 
+            let tem = cheTemporal.checked ? 'X' : '';
             await agregarProducto('PRODUCTOS', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
             await agregarProducto('CUENCA', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
             await agregarProducto('QUITO', codigo, productName, productLeather, productConstruction, 
-                productPrice, productDiscount, productObservation, photoURL
+                productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
+                tem, photoURL
             );
             setTimeout(() =>{}, 500);
 
@@ -775,33 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }catch(e){
             showAlert(e.message, 'E');
         }
-    })
-    async function agregarProducto(local, cod, nom, cue, con, pre, des, obs, fot){
-        await db.collection(local).doc(cod).set({
-            nombre: nom,
-            cuero: cue,
-            construccion: con,
-            precio: parseFloat(pre),
-            descuento: des,
-            d1: txtDis1.value,
-            d2: txtDis2.value,
-            d3: txtDis3.value,
-            observacion: obs,
-            temporal: cheTemporal.checked ? 'X' : '',
-            foto: fot,
-            t34: 0,
-            t35: 0,
-            t36: 0,
-            t37: 0,
-            t38: 0,
-            t39: 0,
-            t40: 0,
-            t41: 0,
-            t42: 0,
-            t43: 0,
-            t44: 0
-        });
-    }
+    });
     productDiscountCheck.addEventListener("change", function(event) {
         if(event.target.checked){
             txtDis1.disabled = false;

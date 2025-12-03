@@ -167,3 +167,43 @@ async function obtenerStock(local, cod){
     return data.data();
   }
 }
+//Actualizar producto de acuerdo a su local
+async function actualizarProducto(local, id, nom, cue, con, pre, obs, de1, de2, de3){
+  await db.collection(local).doc(id).update({
+    nombre: nom,
+    cuero: cue,
+    construccion: con,
+    precio: pre,
+    observacion: obs,
+    d1: de1,
+    d2: de2,
+    d3: de3
+  });
+}
+//Agregar producto
+async function agregarProducto(local, cod, nom, cue, con, pre, des, de1, de2, de3, obs, tem, fot){
+  await db.collection(local).doc(cod).set({
+      nombre: nom,
+      cuero: cue,
+      construccion: con,
+      precio: parseFloat(pre),
+      descuento: des,
+      d1: de1,
+      d2: de2,
+      d3: de3,
+      observacion: obs,
+      temporal: tem,
+      foto: fot,
+      t34: 0,
+      t35: 0,
+      t36: 0,
+      t37: 0,
+      t38: 0,
+      t39: 0,
+      t40: 0,
+      t41: 0,
+      t42: 0,
+      t43: 0,
+      t44: 0
+  });
+}
