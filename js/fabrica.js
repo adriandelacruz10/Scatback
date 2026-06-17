@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailDis1 = document.getElementById("detailDis1");
     const detailDis2 = document.getElementById("detailDis2");
     const detailDis3 = document.getElementById("detailDis3");
+    const txtNombreComEdi = document.getElementById("txtNombreComEdi");
 
     function attachEventListeners() {
         document.querySelectorAll(".view_btn").forEach(button => {
@@ -177,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const product = doc.data();
                 detailImage.src = product.foto;
                 detailName.textContent = product.nombre;
+                txtNombreComEdi.textContent = product.comercial;
                 detailLeather.textContent = product.cuero;
                 detailConstruction.textContent = product.construccion;
                 detailPrice.textContent = product.precio;
@@ -207,6 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const product = doc.data();
                 detailImage.src = product.foto;
                 detailName.textContent = product.nombre;
+                txtNombreComEdi.textContent = product.comercial;
                 detailLeather.textContent = product.cuero;
                 detailConstruction.textContent = product.construccion;
                 detailDiscount.textContent = product.descuento;
@@ -298,29 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
             t43: num_t43,
             t44: num_t44
         }).then(() => {
-            const now = new Date();
-            const fechaFormateada = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getFullYear()} 
-                ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}
-            `;
-            db.collection("HISTORIAL").add({
-                cod: productId,
-                usuario: storedUser.nombre,
-                nombre: productName,
-                cuero: productLeaher,
-                fecha: fechaFormateada,
-                t34: editDetailTxt34.value,
-                t35: editDetailTxt35.value,
-                t36: editDetailTxt36.value,
-                t37: editDetailTxt37.value,
-                t38: editDetailTxt38.value,
-                t39: editDetailTxt39.value,
-                t40: editDetailTxt40.value,
-                t41: editDetailTxt41.value,
-                t42: editDetailTxt42.value,
-                t43: editDetailTxt43.value,
-                t44: editDetailTxt44.value
-            });
-
             printLote(productId);
 
             editDetailTxt34.value = "";
@@ -670,10 +650,10 @@ document.addEventListener("DOMContentLoaded", () => {
     addProductBtn.addEventListener("click", function () {
         productModal.style.display = "flex";
     });
-
     closeProductModal.addEventListener("click", function () {
         productModal.style.display = "none";
         document.getElementById("product_name").value = "";
+        document.getElementById("txtNombreCom").value = '';
         document.getElementById("product_leather").value = "";
         document.getElementById("product_price").value = "";
         document.getElementById("product_photo").value = "";
@@ -687,7 +667,6 @@ document.addEventListener("DOMContentLoaded", () => {
         txtDis2.value = "";
         txtDis3.value = "";
     });
-
     saveProductBtn.addEventListener("click", async function (){
         showAlert("CARGANDO...", "L");
         const productName = document.getElementById("product_name").value.trim();
@@ -696,6 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const productPrice = document.getElementById("product_price").value.trim();
         const productObservation = document.getElementById("product_observation").value.trim();
         const productPhoto = document.getElementById("product_photo").files[0];
+        const txtNombreCom = document.getElementById("txtNombreCom").value.trim().toUpperCase();
         var productDiscount; 
         if(productDiscountCheck.checked)
         {
@@ -704,7 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
             productDiscount = "NO";
         }
 
-        if (productName == "" || productLeather == "" || productPrice == "" || productPhoto == null) {
+        if (productName == "" || txtNombreCom == "" || productLeather == "" || productPrice == "" || productPhoto == null) {
             showAlert("Debe llenar todos los campos","E");
             return;
         }
@@ -725,21 +705,22 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             let tem = cheTemporal.checked ? 'X' : '';
-            await agregarProducto('PRODUCTOS', codigo, productName, productLeather, productConstruction, 
+            await agregarProducto('PRODUCTOS', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
                 tem, photoURL
             );
-            await agregarProducto('CUENCA', codigo, productName, productLeather, productConstruction, 
+            await agregarProducto('CUENCA', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
                 tem, photoURL
             );
-            await agregarProducto('QUITO', codigo, productName, productLeather, productConstruction, 
+            await agregarProducto('QUITO', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
                 tem, photoURL
             );
             setTimeout(() =>{}, 500);
 
             document.getElementById("product_name").value = '';
+            document.getElementById("txtNombreCom").value = '';
             document.getElementById("product_leather").value = '';
             document.getElementById("product_price").value = '';
             document.getElementById("product_photo").value = '';
@@ -758,7 +739,6 @@ document.addEventListener("DOMContentLoaded", () => {
             showAlert(e.message, 'E');
         }
     });
-
     productDiscountCheck.addEventListener("change", function(event) {
         if(event.target.checked){
             txtDis1.disabled = false;
@@ -2000,7 +1980,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         await eliminarDocumento('PRODUCTOS', p.cod);
                         await eliminarDocumento('CUENCA', p.cod);
                         await eliminarDocumento('QUITO', p.cod);
-                        await eliminarDocumentos('HISTORIAL', p.cod);
                         await eliminarFoto(product.foto);
                     }else{
                         const act = product[`t${p.tal}`] - p.can;

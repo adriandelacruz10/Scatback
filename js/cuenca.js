@@ -850,7 +850,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         await eliminarDocumento('PRODUCTOS', p.cod);
                         await eliminarDocumento('CUENCA', p.cod);
                         await eliminarDocumento('QUITO', p.cod);
-                        await eliminarDocumentos('HISTORIAL', p.cod);
                         await eliminarFoto(product.foto);
                     }else{
                         const act = product[`t${p.tal}`] - p.can;
