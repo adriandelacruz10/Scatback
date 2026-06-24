@@ -168,10 +168,11 @@ async function obtenerStock(local, cod){
   }
 }
 //Actualizar producto de acuerdo a su local
-async function actualizarProducto(local, id, nom, com, cue, con, pre, obs, de1, de2, de3){
+async function actualizarProducto(local, id, nom, com, cue, con, pre, obs, de1, de2, de3, coincidencias){
   await db.collection(local).doc(id).update({
     nombre: nom,
     comercial: com,
+    coincidencias: coincidencias,
     cuero: cue,
     construccion: con,
     precio: pre,
@@ -182,10 +183,11 @@ async function actualizarProducto(local, id, nom, com, cue, con, pre, obs, de1, 
   });
 }
 //Agregar producto
-async function agregarProducto(local, cod, nom, com, cue, con, pre, des, de1, de2, de3, obs, tem, fot){
+async function agregarProducto(local, cod, nom, com, cue, con, pre, des, de1, de2, de3, obs, tem, fot, coincidencias){
   await db.collection(local).doc(cod).set({
       nombre: nom,
       comercial: com,
+      coincidencias: coincidencias,
       cuero: cue,
       construccion: con,
       precio: parseFloat(pre),

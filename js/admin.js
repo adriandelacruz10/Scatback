@@ -326,9 +326,13 @@ document.addEventListener("DOMContentLoaded", () => {
             local = 'QUITO';
         }
 
+        const comercialActualizado = txtNombreComEdi.value.trim().toUpperCase();
+        const coincidencias = generarCoincidencias(comercialActualizado);
+
         db.collection(local).doc(productId).update({
             nombre: detailName.value,
-            comercial: txtNombreComEdi.value.trim().toUpperCase(),
+            comercial: comercialActualizado,
+            coincidencias: coincidencias,
             cuero: detailLeather.value,
             construccion: detailConstruction.value,
             precio: detailPrice.value,
@@ -349,11 +353,11 @@ document.addEventListener("DOMContentLoaded", () => {
             t44: num_t44
         }).then(async () => {
             await actualizarProducto('PRODUCTOS', productId, detailName.value, txtNombreComEdi.value.trim().toUpperCase(), detailLeather.value, detailConstruction.value, detailPrice.value, 
-                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value, coincidencias);
             await actualizarProducto('CUENCA', productId, detailName.value, txtNombreComEdi.value.trim().toUpperCase(), detailLeather.value, detailConstruction.value, detailPrice.value, 
-                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value, coincidencias);
             await actualizarProducto('QUITO', productId, detailName.value, txtNombreComEdi.value.trim().toUpperCase(), detailLeather.value, detailConstruction.value, detailPrice.value, 
-                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value);
+                detailObservation.value, detailDis1.value, detailDis2.value, detailDis3.value, coincidencias);
 
             printLote(productId);
 
@@ -639,6 +643,26 @@ document.addEventListener("DOMContentLoaded", () => {
         printModal.style.display = "none";
     });
 
+    function normalizarTextoBusqueda(value) {
+        return value
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^\w\s]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase();
+    }
+    function generarCoincidencias(comercial) {
+        const textoNormalizado = normalizarTextoBusqueda(comercial);
+        const coincidencias = textoNormalizado
+            .split(" ")
+            .map((word) => word.trim())
+            .filter((word) => word.length >= 3)
+            .map((word) => word.substring(0, 3));
+
+        return [...new Set(coincidencias)];
+    }
+
     //LOGOUT
     const logoutBtn = document.getElementById("logout_btn");
 
@@ -693,6 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const productObservation = document.getElementById("product_observation").value.trim();
         const productPhoto = document.getElementById("product_photo").files[0];
         const txtNombreCom = document.getElementById("txtNombreCom").value.trim().toUpperCase();
+        const coincidencias = generarCoincidencias(txtNombreCom);
         var productDiscount; 
         if(productDiscountCheck.checked)
         {
@@ -724,15 +749,15 @@ document.addEventListener("DOMContentLoaded", () => {
             let tem = cheTemporal.checked ? 'X' : '';
             await agregarProducto('PRODUCTOS', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
-                tem, photoURL
+                tem, photoURL, coincidencias
             );
             await agregarProducto('CUENCA', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
-                tem, photoURL
+                tem, photoURL, coincidencias
             );
             await agregarProducto('QUITO', codigo, productName, txtNombreCom, productLeather, productConstruction, 
                 productPrice, productDiscount, txtDis1.value, txtDis2.value, txtDis3.value, productObservation, 
-                tem, photoURL
+                tem, photoURL, coincidencias
             );
             setTimeout(() =>{}, 500);
 
